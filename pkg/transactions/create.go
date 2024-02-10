@@ -36,7 +36,9 @@ func Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	client, err := data.FindClient(id)
+	storage := data.NewStorage()
+
+	client, err := storage.FindClient(id)
 	if err != nil {
 		utils.WriteErrorJson(w, err, 500)
 		return
@@ -53,7 +55,7 @@ func Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	payload.ClientId = client.Id
-	if err = data.Save(*client, payload); err != nil {
+	if err = storage.Save(*client, payload); err != nil {
 		utils.WriteErrorJson(w, err, 500)
 		return
 	}
