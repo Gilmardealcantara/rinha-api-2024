@@ -20,6 +20,11 @@ func FindClient(id int) (*Client, error) {
 	return &clients[index], nil
 }
 
-func Save(client Client) error {
+func Save(client Client, t Transaction) error {
 	return nil
+}
+
+
+func GetTransactions(clientId int) ([]Transaction, error) {
+	return []Transaction{}, nil
 }

@@ -10,6 +10,7 @@ import (
 func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /clientes/{id}/transacoes", transactions.Create)
+	mux.HandleFunc("GET /clientes/{id}/extrato", transactions.Create)
 
 	slog.Info("starging server...")
 	err := http.ListenAndServe("localhost:8080", mux)

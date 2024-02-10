@@ -1,6 +1,9 @@
 package data
 
-import "errors"
+import (
+	"errors"
+	"time"
+)
 
 type Client struct {
 	Id      int
@@ -8,12 +11,13 @@ type Client struct {
 	Balance int64
 }
 
-func(c *Client) PerformTransaction(typ string, value int64) error {
-	if typ == "c" {
-		return c.credit(value)
+func(c *Client) PerformTransaction(payload Transaction) error {
+	payload.CreatedAt = time.Now()
+	if payload.Type == "c" {
+		return c.credit(payload.Value)
 	}
 
-	return c.debit(value)
+	return c.debit(payload.Value)
 }
 
 func (c *Client)credit(value int64) error {
@@ -30,3 +34,5 @@ func (c *Client)debit(value int64) error {
 	c.Balance = newBalance 
 	return nil
 }
+
+

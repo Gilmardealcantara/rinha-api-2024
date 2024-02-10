@@ -24,7 +24,7 @@ func Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var payload CreateRequest
+	var payload data.Transaction
 	err = json.NewDecoder(r.Body).Decode(&payload)
 	if err != nil {
 		utils.WriteErrorJson(w, err, 400)
@@ -47,21 +47,22 @@ func Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := client.PerformTransaction(payload.Type, payload.Value); err != nil {
+	if err := client.PerformTransaction(payload); err != nil {
 		utils.WriteErrorJson(w, err, 422)
 		return
 	}
 
-	if err = data.Save(*client); err != nil {
+	payload.ClientId = client.Id
+	if err = data.Save(*client, payload); err != nil {
 		utils.WriteErrorJson(w, err, 500)
 		return
 	}
 
+	slog.Info("CreateTransaction: id: "+idPath, slog.Any("transaction", payload), slog.Any("client", client))
 	result := Response{
 		Balance: client.Balance,
 		Limit:   client.Limit,
 	}
 
-	slog.Info("CreateTransaction: id: "+idPath, slog.Any("payload", payload), slog.Any("client", client))
 	utils.WriteJson(w, result, 200)
 }
