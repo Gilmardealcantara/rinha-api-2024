@@ -5,7 +5,9 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
+	"github.com/Gilmardealcantara/rinha/pkg/statement"
 	"github.com/Gilmardealcantara/rinha/pkg/transactions"
 	"github.com/stretchr/testify/assert"
 )
@@ -67,5 +69,25 @@ func TestCreateTransaction(t *testing.T) {
 		assert.Equal(t, http.StatusUnprocessableEntity, recorder.Code, recorder.Body.String())
 		assert.Equal(t, `{"error":"insufficient limit"}`, recorder.Body.String())
 	})
+}
 
+func TestGetStatment(t *testing.T) {
+	t.Run("with sucess", func(t *testing.T) {
+		mockTimeNow(t, "2024-01-12T11:45:26.371Z")
+		request := httptest.NewRequest("GET", "/clientes/1/extrato", nil)
+		request.SetPathValue("id", "1")
+		recorder := httptest.NewRecorder()
+
+		statement.GetStatement(recorder, request)
+
+		assert.Equal(t, http.StatusOK, recorder.Code, recorder.Body.String())
+		expectedValue := `{"saldo":{"total":0,"data_extrato":"2024-01-12T11:45:26.371Z","limite":100000},"ultimas_transacoes":[]}`
+		assert.Equal(t, expectedValue, recorder.Body.String())
+	})
+}
+
+func mockTimeNow(t *testing.T, str string) {
+	now, err := time.Parse(time.RFC3339Nano, str)
+	assert.NoError(t, err)
+	statement.AppNow = func() time.Time { return now }
 }
