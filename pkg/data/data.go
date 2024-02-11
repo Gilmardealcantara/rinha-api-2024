@@ -1,15 +1,11 @@
 package data
 
-
 type Storage interface {
-	FindClient(id int) (*Client, error)
+	FindAccount(id int) (*Account, error)
 	GetTransactions(clientId int) ([]Transaction, error)
-	Save(client Client, t Transaction) error
+	Save(client Account, t Transaction) error
 }
-
 
 func NewStorage() Storage {
 	return newImemoryStorage()
 }
-
-

@@ -18,38 +18,37 @@ func GetStatement(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("ID : ", idPath, ", err: ", err.Error())
 		utils.WriteErrorJson(w, err, http.StatusBadRequest)
 		return
-	}	
-	
+	}
+
 	storage := data.NewStorage()
 
-	client, err := storage.FindClient(id)
+	acc, err := storage.FindAccount(id)
 	if err != nil {
 		utils.WriteErrorJson(w, err, http.StatusInternalServerError)
-		return
-	}
-	
-	if client == nil {
-		utils.WriteErrorJson(w, errors.New("client not found"), http.StatusNotFound)
 		return
 	}
 
-	transaction, err := storage.GetTransactions(client.Id)
+	if acc == nil {
+		utils.WriteErrorJson(w, errors.New("account not found"), http.StatusNotFound)
+		return
+	}
+
+	transaction, err := storage.GetTransactions(acc.ClientId)
 	if err != nil {
 		utils.WriteErrorJson(w, err, http.StatusInternalServerError)
 		return
 	}
-	
+
 	result := Response{
 		Balance: BalanceResult{
-			Total: client.Balance,
-			Date: getTimeStr(AppNow()),
-			Limit: client.Limit,
+			Total: acc.Balance,
+			Date:  getTimeStr(AppNow()),
+			Limit: acc.Limit,
 		},
 		LastTransactions: transaction,
-	}	
+	}
 	utils.WriteJson(w, result, http.StatusOK)
 }
-
 
 var AppNow = func() time.Time {
 	return time.Now()
@@ -60,12 +59,12 @@ func getTimeStr(t time.Time) string {
 }
 
 type Response struct {
-	Balance BalanceResult `json:"saldo"`
+	Balance          BalanceResult      `json:"saldo"`
 	LastTransactions []data.Transaction `json:"ultimas_transacoes"`
 }
 
 type BalanceResult struct {
-	Total int64 `json:"total"`
-	Date string `json:"data_extrato"`
-	Limit int64 `json:"limite"`
+	Total int64  `json:"total"`
+	Date  string `json:"data_extrato"`
+	Limit int64  `json:"limite"`
 }
