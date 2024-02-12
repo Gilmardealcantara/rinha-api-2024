@@ -66,6 +66,19 @@ func (i *pgImpl) Save(acc Account, t Transaction) (err error) {
 	return err
 }
 
+func (i *pgImpl) CleanUp() (err error) {
+	_, err = i.dbpool.Exec(context.Background(), "truncate table transacoes")
+	if err != nil {
+		return err
+	}
+	_, err = i.dbpool.Exec(context.Background(), "truncate table saldos")
+	if err != nil {
+		return err
+	}
+	_, err = i.dbpool.Exec(context.Background(), "update clientes set saldo=0")
+	return err
+}
+
 func Config() *pgxpool.Config {
 	const defaultMaxConns = int32(4)
 	const defaultMinConns = int32(0)

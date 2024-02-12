@@ -34,3 +34,7 @@ func (s imemory) GetTransactions(clientId int) ([]Transaction, error) {
 func (s imemory) Save(client Account, t Transaction) error {
 	return nil
 }
+
+func (s imemory) CleanUp() error {
+	return nil
+}

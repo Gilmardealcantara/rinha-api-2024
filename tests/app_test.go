@@ -28,12 +28,14 @@ func TestCreateTransaction(t *testing.T) {
 		payload: `{"valor": 1000,"tipo":"x","descricao" : "12345678901"}`,
 	}}
 
+	storage := setupStorage(t)
+
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			request := httptest.NewRequest("POST", "/clientes/1/transacoes", bytes.NewBuffer([]byte(c.payload)))
 			request.SetPathValue("id", "1")
 			recorder := httptest.NewRecorder()
-			transactions.Create(data.NewStorage())(recorder, request)
+			transactions.Create(storage)(recorder, request)
 			assert.Equal(t, http.StatusBadRequest, recorder.Code)
 		})
 	}
@@ -43,7 +45,7 @@ func TestCreateTransaction(t *testing.T) {
 		request := httptest.NewRequest("POST", "/clientes/1/transacoes", bytes.NewBuffer([]byte(payload)))
 		request.SetPathValue("id", "1")
 		recorder := httptest.NewRecorder()
-		transactions.Create(data.NewStorage())(recorder, request)
+		transactions.Create(storage)(recorder, request)
 
 		assert.Equal(t, http.StatusOK, recorder.Code, recorder.Body.String())
 		assert.Equal(t, `{"limite":100000,"saldo":1000}`, recorder.Body.String())
@@ -54,7 +56,7 @@ func TestCreateTransaction(t *testing.T) {
 		request := httptest.NewRequest("POST", "/clientes/2/transacoes", bytes.NewBuffer([]byte(payload)))
 		request.SetPathValue("id", "2")
 		recorder := httptest.NewRecorder()
-		transactions.Create(data.NewStorage())(recorder, request)
+		transactions.Create(storage)(recorder, request)
 
 		assert.Equal(t, http.StatusOK, recorder.Code, recorder.Body.String())
 		assert.Equal(t, `{"limite":80000,"saldo":-1000}`, recorder.Body.String())
@@ -65,7 +67,7 @@ func TestCreateTransaction(t *testing.T) {
 		request := httptest.NewRequest("POST", "/clientes/3/transacoes", bytes.NewBuffer([]byte(payload)))
 		request.SetPathValue("id", "3")
 		recorder := httptest.NewRecorder()
-		transactions.Create(data.NewStorage())(recorder, request)
+		transactions.Create(storage)(recorder, request)
 
 		assert.Equal(t, http.StatusUnprocessableEntity, recorder.Code, recorder.Body.String())
 		assert.Equal(t, `{"error":"insufficient limit"}`, recorder.Body.String())
@@ -73,13 +75,14 @@ func TestCreateTransaction(t *testing.T) {
 }
 
 func TestGetStatment(t *testing.T) {
+	storage := setupStorage(t)
 	t.Run("with sucess", func(t *testing.T) {
 		mockTimeNow(t, "2024-01-12T11:45:26.371Z")
 		request := httptest.NewRequest("GET", "/clientes/1/extrato", nil)
 		request.SetPathValue("id", "1")
 		recorder := httptest.NewRecorder()
 
-		statement.GetStatement(data.NewStorage())(recorder, request)
+		statement.GetStatement(storage)(recorder, request)
 
 		assert.Equal(t, http.StatusOK, recorder.Code, recorder.Body.String())
 		expectedValue := `{"saldo":{"total":0,"data_extrato":"2024-01-12T11:45:26.371Z","limite":100000},"ultimas_transacoes":[]}`
@@ -91,4 +94,13 @@ func mockTimeNow(t *testing.T, str string) {
 	now, err := time.Parse(time.RFC3339Nano, str)
 	assert.NoError(t, err)
 	statement.AppNow = func() time.Time { return now }
+}
+
+func setupStorage(t *testing.T) data.Storage {
+	storage := data.NewStorage()
+	err := storage.CleanUp()
+	if err != nil {
+		assert.FailNow(t, err.Error())
+	}
+	return storage
 }
