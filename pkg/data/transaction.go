@@ -8,6 +8,7 @@ import (
 )
 
 type Transaction struct {
+	Id					int `json:"-"`
 	ClientId		int `json:"client_id"`
 	Value       int64 `json:"valor" validate:"min=1"`
 	Type        string `json:"tipo"`

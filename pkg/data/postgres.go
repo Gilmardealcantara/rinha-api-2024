@@ -39,11 +39,31 @@ func (i *pgImpl) FindAccount(id int) (*Account, error) {
 }
 
 func (i *pgImpl) GetTransactions(clientId int) ([]Transaction, error) {
-	return []Transaction{}, nil
+	result := []Transaction{}
+	rows, err := i.dbpool.Query(context.Background(), "select id, cliente_id, valor, tipo, descricao, realizada_em from transacoes where cliente_id = $1", clientId)
+	if err != nil {
+		return nil, err
+	}	
+	defer rows.Close()
+
+	for rows.Next() {
+		var t Transaction
+		if err := rows.Scan(&t.Id, &t.ClientId, &t.Value, &t.Type, &t.Description, &t.CreatedAt); err != nil {
+			return nil, err
+		}
+		result = append(result, t)	
+	}
+
+	return result,rows.Err()
 }
 
-func (i *pgImpl) Save(client Account, t Transaction) error {
-	return nil
+func (i *pgImpl) Save(acc Account, t Transaction) (err error) {
+	_, err = i.dbpool.Exec(context.Background(), "update clientes set saldo=$2 where id=$1", acc.ClientId, acc.Balance)
+	if err != nil {
+		return err
+	}
+	_, err = i.dbpool.Exec(context.Background(), "insert into transacoes(cliente_id, valor, descricao, realizada_em, tipo) values($1, $2, $3, $4, $5)", t.ClientId, t.Value, t.Description, t.CreatedAt, t.Type)
+	return err
 }
 
 func Config() *pgxpool.Config {
