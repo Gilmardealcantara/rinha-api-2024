@@ -7,6 +7,7 @@ import (
 
 type Account struct {
 	ClientId int
+	ClientName string
 	Limit    int64
 	Balance  int64
 }

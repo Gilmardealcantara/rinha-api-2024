@@ -10,3 +10,5 @@ run_docker: build_docker
 up: build_docker
 	docker compose up --build
 
+db:
+	export PGPASSWORD='123' && psql -d rinha -h localhost -p 5433 -U admin

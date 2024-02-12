@@ -29,7 +29,7 @@ func GetStatement(storage data.Storage) http.HandlerFunc {
 		}
 
 		if acc == nil {
-			utils.WriteErrorJson(w, errors.New("account not found"), http.StatusNotFound)
+			utils.WriteErrorJson(w, errors.New("account not found id: " + idPath), http.StatusNotFound)
 			return
 		}
 

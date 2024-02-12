@@ -2,6 +2,7 @@ package data
 
 import (
 	"context"
+	"database/sql"
 	"log/slog"
 	"os"
 	"time"
@@ -28,11 +29,17 @@ func newPgImpl() Storage {
 }
 
 func (i *pgImpl) FindAccount(id int) (*Account, error) {
-	return nil, nil
+	var acc Account
+	err := i.dbpool.QueryRow(context.Background(), "select id, nome, limite, saldo from clientes where id=$1", id).
+		Scan(&acc.ClientId, &acc.ClientName, &acc.Limit, &acc.Balance)	
+	if err != nil && err == sql.ErrNoRows {
+		return nil, nil
+	}
+	return &acc, err
 }
 
 func (i *pgImpl) GetTransactions(clientId int) ([]Transaction, error) {
-	return nil, nil
+	return []Transaction{}, nil
 }
 
 func (i *pgImpl) Save(client Account, t Transaction) error {
@@ -50,7 +57,7 @@ func Config() *pgxpool.Config {
 	// Your own Database URL
 	var DATABASE_URL string = os.Getenv("DATABASE_URL")
 	if DATABASE_URL == "" {
-		DATABASE_URL = "postgres://admin:123@localhost:5432/rinha?"
+		DATABASE_URL = "postgres://admin:123@localhost:5433/rinha?"
 	}
 
 	dbConfig, err := pgxpool.ParseConfig(DATABASE_URL)
