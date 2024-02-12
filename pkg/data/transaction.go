@@ -8,20 +8,20 @@ import (
 )
 
 type Transaction struct {
-	Id					int `json:"-"`
-	ClientId		int `json:"client_id"`
-	Value       int64 `json:"valor" validate:"min=1"`
-	Type        string `json:"tipo"`
-	Description string `json:"descricao" validate:"min=1,max=10"`
-	CreatedAt time.Time `json:"realizada_em"`
+	Id          int       `json:"-"`
+	ClientId    int       `json:"client_id"`
+	Value       int64     `json:"valor" validate:"min=1"`
+	Type        string    `json:"tipo"`
+	Description string    `json:"descricao" validate:"min=1,max=10"`
+	CreatedAt   time.Time `json:"realizada_em"`
 }
 
 func (r Transaction) Validate() error {
-	if err := validator.Validate(r); err != nil 	{
+	if err := validator.Validate(r); err != nil {
 		return err
 	}
 	if r.Type != "c" && r.Type != "d" {
 		return errors.New("invaid type: " + r.Type)
-	} 
-	return nil 
+	}
+	return nil
 }

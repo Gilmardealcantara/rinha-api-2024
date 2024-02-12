@@ -59,11 +59,12 @@ func Create(storage data.Storage) http.HandlerFunc {
 			return
 		}
 
-		slog.Info("CreateTransaction: id: "+idPath, slog.String("app_name", utils.AppName),slog.Any("transaction", payload), slog.Any("account", acc))
+		slog.Info("CreateTransaction: id: "+idPath, slog.String("app_name", utils.AppName), slog.Any("transaction", payload), slog.Any("account", acc))
 		result := Response{
 			Balance: acc.Balance,
 			Limit:   acc.Limit,
 		}
 
 		utils.WriteJson(w, result, 200)
-	}}
+	}
+}

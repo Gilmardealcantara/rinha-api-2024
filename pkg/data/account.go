@@ -6,10 +6,10 @@ import (
 )
 
 type Account struct {
-	ClientId int
+	ClientId   int
 	ClientName string
-	Limit    int64
-	Balance  int64
+	Limit      int64
+	Balance    int64
 }
 
 func (c *Account) PerformTransaction(payload Transaction) error {

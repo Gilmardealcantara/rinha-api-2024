@@ -9,7 +9,7 @@ type imemory struct {
 }
 
 func newImemoryStorage() *imemory {
-	var clients = []Account{
+	clients := []Account{
 		{ClientId: 1, Limit: 100_000, Balance: 0},
 		{ClientId: 2, Limit: 80_000, Balance: 0},
 		{ClientId: 3, Limit: 1_000_000, Balance: 0},

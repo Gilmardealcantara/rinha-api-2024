@@ -13,9 +13,13 @@ import (
 
 func main() {
 	bindAddress := os.Getenv("BIND_ADDRESS")
-	if bindAddress == "" {bindAddress = "localhost"}
+	if bindAddress == "" {
+		bindAddress = "localhost"
+	}
 	bindPort := os.Getenv("BIND_PORT")
-	if bindPort == "" {bindPort = "8000"}	
+	if bindPort == "" {
+		bindPort = "8000"
+	}
 	utils.SetAppName()
 
 	storage := data.NewStorage()
@@ -24,9 +28,8 @@ func main() {
 	mux.HandleFunc("POST /clientes/{id}/transacoes", transactions.Create(storage))
 	mux.HandleFunc("GET /clientes/{id}/extrato", statement.GetStatement(storage))
 
-
-	slog.Info("server "+utils.AppName+" running in " + bindAddress + ":" + bindPort)
-	err := http.ListenAndServe(bindAddress + ":" + bindPort, mux)
+	slog.Info("server " + utils.AppName + " running in " + bindAddress + ":" + bindPort)
+	err := http.ListenAndServe(bindAddress+":"+bindPort, mux)
 	if err != nil {
 		slog.Error("Error in start server", slog.Any("error", err))
 	}

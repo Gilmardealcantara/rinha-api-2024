@@ -18,7 +18,7 @@ func newPgImpl() Storage {
 	dbconn, err := pgxpool.NewWithConfig(context.Background(), Config())
 	if err != nil {
 		panic(err)
-	}	
+	}
 
 	err = dbconn.Ping(context.Background())
 	if err != nil {
@@ -31,7 +31,7 @@ func newPgImpl() Storage {
 func (i *pgImpl) FindAccount(id int) (*Account, error) {
 	var acc Account
 	err := i.dbpool.QueryRow(context.Background(), "select id, nome, limite, saldo from clientes where id=$1", id).
-		Scan(&acc.ClientId, &acc.ClientName, &acc.Limit, &acc.Balance)	
+		Scan(&acc.ClientId, &acc.ClientName, &acc.Limit, &acc.Balance)
 	if err != nil && err == sql.ErrNoRows {
 		return nil, nil
 	}
@@ -43,7 +43,7 @@ func (i *pgImpl) GetTransactions(clientId int) ([]Transaction, error) {
 	rows, err := i.dbpool.Query(context.Background(), "select id, cliente_id, valor, tipo, descricao, realizada_em from transacoes where cliente_id = $1", clientId)
 	if err != nil {
 		return nil, err
-	}	
+	}
 	defer rows.Close()
 
 	for rows.Next() {
@@ -51,10 +51,10 @@ func (i *pgImpl) GetTransactions(clientId int) ([]Transaction, error) {
 		if err := rows.Scan(&t.Id, &t.ClientId, &t.Value, &t.Type, &t.Description, &t.CreatedAt); err != nil {
 			return nil, err
 		}
-		result = append(result, t)	
+		result = append(result, t)
 	}
 
-	return result,rows.Err()
+	return result, rows.Err()
 }
 
 func (i *pgImpl) Save(acc Account, t Transaction) (err error) {
