@@ -3,6 +3,7 @@ package statement
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"time"
@@ -32,6 +33,8 @@ func GetStatement(w http.ResponseWriter, r *http.Request) {
 		utils.WriteErrorJson(w, errors.New("account not found"), http.StatusNotFound)
 		return
 	}
+
+	slog.Info("GetStatement: client_id: "+idPath,slog.String("app_name", utils.AppName), slog.Any("account", acc))
 
 	transaction, err := storage.GetTransactions(acc.ClientId)
 	if err != nil {
