@@ -30,7 +30,7 @@ func newPgImpl() Storage {
 
 func (i *pgImpl) FindAccount(id int) (*Account, error) {
 	var acc Account
-	err := i.dbpool.QueryRow(context.Background(), "select id, nome, limite, saldo from clientes where id=$1", id).
+	err := i.dbpool.QueryRow(context.Background(), "select c.id, c.nome, c.limite, s.valor from clientes c join saldos s on c.id = s.cliente_id where c.id=$1", id).
 		Scan(&acc.ClientId, &acc.ClientName, &acc.Limit, &acc.Balance)
 	if err != nil && err == sql.ErrNoRows {
 		return nil, nil
@@ -58,7 +58,7 @@ func (i *pgImpl) GetTransactions(clientId int) ([]Transaction, error) {
 }
 
 func (i *pgImpl) Save(acc Account, t Transaction) (err error) {
-	_, err = i.dbpool.Exec(context.Background(), "update clientes set saldo=$2 where id=$1", acc.ClientId, acc.Balance)
+	_, err = i.dbpool.Exec(context.Background(), "update saldos set valor=$2 where cliente_id=$1", acc.ClientId, acc.Balance)
 	if err != nil {
 		return err
 	}
@@ -71,11 +71,7 @@ func (i *pgImpl) CleanUp() (err error) {
 	if err != nil {
 		return err
 	}
-	_, err = i.dbpool.Exec(context.Background(), "truncate table saldos")
-	if err != nil {
-		return err
-	}
-	_, err = i.dbpool.Exec(context.Background(), "update clientes set saldo=0")
+	_, err = i.dbpool.Exec(context.Background(), "update saldos set valor=0")
 	return err
 }
 
