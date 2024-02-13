@@ -21,7 +21,7 @@ func (r Transaction) Validate() error {
 		return err
 	}
 	if r.Type != "c" && r.Type != "d" {
-		return errors.New("invaid type: " + r.Type)
+		return errors.New("invalid type: " + r.Type)
 	}
 	return nil
 }

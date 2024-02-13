@@ -28,7 +28,7 @@ func (c *Account) credit(value int64) error {
 
 func (c *Account) debit(value int64) error {
 	newBalance := c.Balance - value
-	if newBalance < (c.Limit * -1) {
+	if c.Limit+newBalance < 0 {
 		return errors.New("insufficient limit")
 	}
 	c.Balance = newBalance

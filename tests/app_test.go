@@ -52,14 +52,14 @@ func TestCreateTransaction(t *testing.T) {
 	})
 
 	t.Run("with sucess debit", func(t *testing.T) {
-		payload := `{"valor": 1000,"tipo":"d","descricao" : "descricao"}`
+		payload := `{"valor": 80000,"tipo":"d","descricao" : "descricao"}`
 		request := httptest.NewRequest("POST", "/clientes/2/transacoes", bytes.NewBuffer([]byte(payload)))
 		request.SetPathValue("id", "2")
 		recorder := httptest.NewRecorder()
 		transactions.Create(storage)(recorder, request)
 
 		assert.Equal(t, http.StatusOK, recorder.Code, recorder.Body.String())
-		assert.Equal(t, `{"limite":80000,"saldo":-1000}`, recorder.Body.String())
+		assert.Equal(t, `{"limite":80000,"saldo":-80000}`, recorder.Body.String())
 	})
 
 	t.Run("with unprocessable debit", func(t *testing.T) {

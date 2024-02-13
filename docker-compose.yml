@@ -2,7 +2,7 @@ version: "3.5"
 
 services:
   api01: &api
-    image: golango_rinha
+    image: gilmardealcantara/golango_rinha
     hostname: api01
     environment:
       - DB_HOSTNAME=db
@@ -15,12 +15,13 @@ services:
     ports:
       - "3001:3000"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     deploy:
       resources:
         limits:
-          cpus: "0.55"
-          memory: "200MB"
+          cpus: "0.50"
+          memory: "190MB"
 
   api02:
     <<: *api
@@ -40,8 +41,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.15"
-          memory: "10MB"
+          cpus: "0.25"
+          memory: "30MB"
 
   db:
     image: postgres:latest
@@ -60,6 +61,11 @@ services:
         limits:
           cpus: "0.25"
           memory: "140MB"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d rinha -U admin"]
+      interval: 5s
+      timeout: 2s
+      retries: 5
 
 networks:
   default:

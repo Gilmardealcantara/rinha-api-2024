@@ -3,7 +3,6 @@ package statement
 import (
 	"errors"
 	"fmt"
-	"log/slog"
 	"net/http"
 	"strconv"
 	"time"
@@ -33,7 +32,7 @@ func GetStatement(storage data.Storage) http.HandlerFunc {
 			return
 		}
 
-		slog.Info("GetStatement: client_id: "+idPath, slog.String("app_name", utils.AppName), slog.Any("account", acc))
+		// slog.Info("GetStatement: client_id: "+idPath, slog.String("app_name", utils.AppName), slog.Any("account", acc))
 
 		transaction, err := storage.GetTransactions(acc.ClientId)
 		if err != nil {

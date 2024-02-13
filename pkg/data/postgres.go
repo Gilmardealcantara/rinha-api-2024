@@ -40,7 +40,11 @@ func (i *pgImpl) FindAccount(id int) (*Account, error) {
 
 func (i *pgImpl) GetTransactions(clientId int) ([]Transaction, error) {
 	result := []Transaction{}
-	rows, err := i.dbpool.Query(context.Background(), "select id, cliente_id, valor, tipo, descricao, realizada_em from transacoes where cliente_id = $1", clientId)
+	rows, err := i.dbpool.Query(
+		context.Background(),
+		"select id, cliente_id, valor, tipo, descricao, realizada_em from transacoes where cliente_id = $1",
+		clientId,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -58,11 +62,24 @@ func (i *pgImpl) GetTransactions(clientId int) ([]Transaction, error) {
 }
 
 func (i *pgImpl) Save(acc Account, t Transaction) (err error) {
-	_, err = i.dbpool.Exec(context.Background(), "update saldos set valor=$2 where cliente_id=$1", acc.ClientId, acc.Balance)
+	_, err = i.dbpool.Exec(
+		context.Background(),
+		"update saldos set valor=$2 where cliente_id=$1",
+		acc.ClientId,
+		acc.Balance,
+	)
 	if err != nil {
 		return err
 	}
-	_, err = i.dbpool.Exec(context.Background(), "insert into transacoes(cliente_id, valor, descricao, realizada_em, tipo) values($1, $2, $3, $4, $5)", t.ClientId, t.Value, t.Description, t.CreatedAt, t.Type)
+	_, err = i.dbpool.Exec(
+		context.Background(),
+		"insert into transacoes(cliente_id, valor, descricao, realizada_em, tipo) values($1, $2, $3, $4, $5)",
+		t.ClientId,
+		t.Value,
+		t.Description,
+		t.CreatedAt,
+		t.Type,
+	)
 	return err
 }
 

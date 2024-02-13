@@ -8,7 +8,7 @@ build_docker: build
 run_docker: build_docker
 	# docker run -p=3000:3000 golango_rinha
 	docker run -p=3000:3000 gilmardealcantara/golango_rinha:latest 
-
+	
 
 up: build_docker
 	docker compose up --build 
