@@ -15,3 +15,7 @@ up: build_docker
 
 db:
 	export PGPASSWORD='123' && psql -d rinha -h localhost -p 5433 -U admin
+
+docker_push:
+	docker tag gilmardealcantara/golango_rinha gilmardealcantara/golango_rinha
+	docker push gilmardealcantara/golango_rinha
