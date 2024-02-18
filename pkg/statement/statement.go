@@ -3,6 +3,7 @@ package statement
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"slices"
 	"strconv"
@@ -24,6 +25,7 @@ func GetStatement(storage data.Storage) http.HandlerFunc {
 
 		acc, err := storage.FindAccount(id)
 		if err != nil {
+			slog.Error("GetStatement FindAccount error ", slog.String("error", err.Error()))
 			utils.WriteErrorJson(w, err, http.StatusInternalServerError)
 			return
 		}
@@ -41,6 +43,7 @@ func GetStatement(storage data.Storage) http.HandlerFunc {
 
 		transactions, err := storage.GetTransactions(acc.ClientId)
 		if err != nil {
+			slog.Error("GetStatement GetTransactions error ", slog.String("error", err.Error()))
 			utils.WriteErrorJson(w, err, http.StatusInternalServerError)
 			return
 		}

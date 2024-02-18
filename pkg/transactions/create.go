@@ -3,6 +3,7 @@ package transactions
 import (
 	"encoding/json"
 	"errors"
+	"log/slog"
 	"net/http"
 	"strconv"
 
@@ -51,7 +52,8 @@ func Create(storage data.Storage) http.HandlerFunc {
 
 		acc, err := storage.FindAccount(id)
 		if err != nil {
-			utils.WriteErrorJson(w, err, 500)
+			slog.Error("Create FindAccount error ", slog.String("error", err.Error()))
+			utils.WriteErrorJson(w, err, http.StatusInternalServerError)
 			return
 		}
 
@@ -71,7 +73,8 @@ func Create(storage data.Storage) http.HandlerFunc {
 
 		payload.ClientId = acc.ClientId
 		if err = storage.Save(*acc, payload); err != nil {
-			utils.WriteErrorJson(w, err, 500)
+			slog.Error("Create Save error ", slog.String("error", err.Error()))
+			utils.WriteErrorJson(w, err, http.StatusInternalServerError)
 			return
 		}
 
