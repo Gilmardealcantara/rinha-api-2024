@@ -8,8 +8,8 @@ import (
 type Account struct {
 	ClientId   int
 	ClientName string
-	Limit      int64
-	Balance    int64
+	Limit      int
+	Balance    int
 }
 
 func (c *Account) PerformTransaction(payload *Transaction) error {
@@ -17,18 +17,17 @@ func (c *Account) PerformTransaction(payload *Transaction) error {
 	if payload.Type == "c" {
 		return c.credit(payload.Value)
 	}
-
 	return c.debit(payload.Value)
 }
 
-func (c *Account) credit(value int64) error {
+func (c *Account) credit(value int) error {
 	c.Balance += value
 	return nil
 }
 
-func (c *Account) debit(value int64) error {
+func (c *Account) debit(value int) error {
 	newBalance := c.Balance - value
-	if c.Limit+newBalance < 0 {
+	if newBalance+c.Limit < 0 {
 		return errors.New("insufficient limit")
 	}
 	c.Balance = newBalance

@@ -2,18 +2,17 @@ package main
 
 import (
 	"fmt"
-	"log/slog"
-	"net/http"
-	"os"
-	"strconv"
-
 	"github.com/Gilmardealcantara/rinha/pkg/data"
 	"github.com/Gilmardealcantara/rinha/pkg/statement"
 	"github.com/Gilmardealcantara/rinha/pkg/transactions"
 	"github.com/Gilmardealcantara/rinha/pkg/utils"
+	"log/slog"
+	"net/http"
+	"os"
+	"strconv"
 )
 
-const VERSION = "0.0.8"
+const VERSION = "0.1.2"
 
 func main() {
 	bindAddress := os.Getenv("BIND_ADDRESS")
@@ -33,6 +32,7 @@ func main() {
 	}
 
 	mux := http.NewServeMux()
+
 	mux.HandleFunc("POST /clientes/{id}/transacoes", transactions.Create(storage))
 	mux.HandleFunc("GET /clientes/{id}/extrato", statement.GetStatement(storage))
 	// mux.Handle("POST /clientes/{id}/transacoes", logMiddleware(transactions.Create(storage)))

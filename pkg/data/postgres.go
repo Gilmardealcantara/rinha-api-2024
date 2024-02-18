@@ -3,11 +3,11 @@ package data
 import (
 	"context"
 	"database/sql"
-	"github.com/jackc/pgx/v5"
 	"log/slog"
 	"os"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -44,7 +44,7 @@ func (i *pgImpl) GetTransactions(clientId int) ([]Transaction, error) {
 	result := []Transaction{}
 	rows, err := i.dbpool.Query(
 		context.Background(),
-		"select id, cliente_id, valor, tipo, descricao, realizada_em from transacoes where cliente_id = $1",
+		"select id, cliente_id, valor, tipo, descricao, realizada_em from transacoes where cliente_id = $1 order by realizada_em desc limit 10",
 		clientId,
 	)
 	if err != nil {

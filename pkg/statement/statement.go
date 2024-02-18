@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"slices"
 	"strconv"
 	"time"
 
@@ -31,15 +30,9 @@ func GetStatement(storage data.Storage) http.HandlerFunc {
 		}
 
 		if acc == nil {
-			utils.WriteErrorJson(
-				w,
-				errors.New("account not found id: "+idPath),
-				http.StatusNotFound,
-			)
+			utils.WriteErrorJson(w, errors.New("account not found id: "+idPath), http.StatusNotFound)
 			return
 		}
-
-		// slog.Info("GetStatement: client_id: "+idPath, slog.String("app_name", utils.AppName), slog.Any("account", acc))
 
 		transactions, err := storage.GetTransactions(acc.ClientId)
 		if err != nil {
@@ -48,9 +41,25 @@ func GetStatement(storage data.Storage) http.HandlerFunc {
 			return
 		}
 
-		slices.SortFunc(transactions, func(a, b data.Transaction) int {
-			return b.CreatedAt.Compare(a.CreatedAt)
-		})
+		// slices.SortFunc(transactions, func(a, b data.Transaction) int {
+		// 	return b.CreatedAt.Compare(a.CreatedAt)
+		// })
+
+		// calcBalance := 0
+		// for _, t := range transactions {
+		// 	if t.Type == "c" {
+		// 		calcBalance += t.Value
+		// 	} else {
+		// 		calcBalance -= t.Value
+		// 	}
+		// }
+
+		// slog.Info(
+		// 	"GetStatement: client_id: "+idPath,
+		// 	slog.Int("balance", acc.Balance),
+		// 	slog.Int("calc_balance", calcBalance),
+		// 	slog.Bool("DIFERENT", calcBalance != acc.Balance),
+		// )
 
 		result := Response{
 			Balance: BalanceResult{
@@ -78,7 +87,7 @@ type Response struct {
 }
 
 type BalanceResult struct {
-	Total int64  `json:"total"`
+	Total int    `json:"total"`
 	Date  string `json:"data_extrato"`
-	Limit int64  `json:"limite"`
+	Limit int    `json:"limite"`
 }
