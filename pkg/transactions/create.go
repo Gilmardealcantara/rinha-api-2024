@@ -3,11 +3,11 @@ package transactions
 import (
 	"encoding/json"
 	"errors"
-	"github.com/Gilmardealcantara/rinha/pkg/data"
-	"github.com/Gilmardealcantara/rinha/pkg/utils"
-	"log/slog"
 	"net/http"
 	"strconv"
+
+	"github.com/Gilmardealcantara/rinha/pkg/data"
+	"github.com/Gilmardealcantara/rinha/pkg/utils"
 )
 
 type Response struct {
@@ -37,32 +37,38 @@ func Create(storage data.Storage) http.HandlerFunc {
 			return
 		}
 
-		acc, err := storage.FindAccount(id)
-		if err != nil {
-			slog.Error("Create FindAccount error ", slog.String("error", err.Error()))
-			utils.WriteErrorJson(w, err, http.StatusInternalServerError)
-			return
-		}
-
-		if acc == nil {
-			utils.WriteErrorJson(w, errors.New("account not found: "+idPath), http.StatusUnprocessableEntity)
-			return
-		}
-
-		if err := acc.PerformTransaction(&payload); err != nil {
-			utils.WriteErrorJson(w, err, http.StatusUnprocessableEntity)
-			return
-		}
-
-		payload.ClientId = acc.ClientId
-		if err = storage.Save(*acc, payload); err != nil {
-			slog.Error("Create Save error ", slog.String("error", err.Error()))
-			utils.WriteErrorJson(w, err, http.StatusInternalServerError)
-			return
-		}
+		// acc, err := storage.FindAccount(id)
+		// if err != nil {
+		// 	slog.Error("Create FindAccount error ", slog.String("error", err.Error()))
+		// 	utils.WriteErrorJson(w, err, http.StatusInternalServerError)
+		// 	return
+		// }
+		//
+		// if acc == nil {
+		// 	utils.WriteErrorJson(w, errors.New("account not found: "+idPath), http.StatusUnprocessableEntity)
+		// 	return
+		// }
+		//
+		// if err := acc.PerformTransaction(&payload); err != nil {
+		// 	utils.WriteErrorJson(w, err, http.StatusUnprocessableEntity)
+		// 	return
+		// }
+		//
+		// payload.ClientId = acc.ClientId
+		// if err = storage.Save(*acc, payload); err != nil {
+		// 	slog.Error("Create Save error ", slog.String("error", err.Error()))
+		// 	utils.WriteErrorJson(w, err, http.StatusInternalServerError)
+		// 	return
+		// }
 
 		// slog.Info("CreateTransaction: id: "+idPath, slog.String("app_name", utils.AppName), slog.Any("transaction", payload), slog.Any("account", acc))
 		// slog.Info("Transaction: "+payload.Type, slog.Int("value", payload.Value))
+
+		acc, derr := storage.SaveSafety(id, payload)
+		if derr != nil {
+			utils.WriteErrorJson(w, derr, derr.Code)
+			return
+		}
 
 		result := Response{
 			Balance: acc.Balance,

@@ -2,17 +2,18 @@ package main
 
 import (
 	"fmt"
-	"github.com/Gilmardealcantara/rinha/pkg/data"
-	"github.com/Gilmardealcantara/rinha/pkg/statement"
-	"github.com/Gilmardealcantara/rinha/pkg/transactions"
-	"github.com/Gilmardealcantara/rinha/pkg/utils"
 	"log/slog"
 	"net/http"
 	"os"
 	"strconv"
+
+	"github.com/Gilmardealcantara/rinha/pkg/data"
+	"github.com/Gilmardealcantara/rinha/pkg/statement"
+	"github.com/Gilmardealcantara/rinha/pkg/transactions"
+	"github.com/Gilmardealcantara/rinha/pkg/utils"
 )
 
-const VERSION = "0.1.3"
+const VERSION = "0.1.4"
 
 func main() {
 	bindAddress := os.Getenv("BIND_ADDRESS")

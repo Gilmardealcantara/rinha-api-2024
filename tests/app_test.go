@@ -89,12 +89,11 @@ func TestCreateTransaction(t *testing.T) {
 		transactions.Create(storage)(recorder, request)
 
 		assert.Equal(t, http.StatusUnprocessableEntity, recorder.Code, recorder.Body.String())
-		assert.Equal(t, `{"error":"insufficient limit"}`, recorder.Body.String())
+		assert.Equal(t, `{"error":"422: insufficient limit"}`, recorder.Body.String())
 	})
 }
 
 func TestGetStatement(t *testing.T) {
-
 	storage := setupStorage(t)
 	t.Run("with sucess", func(t *testing.T) {
 		mockTimeNow(t, "2024-01-12T11:45:26.371Z")
@@ -143,7 +142,6 @@ func createTransaction(
 	if recorder.Code != 200 {
 		assert.FailNow(t, "error code", recorder.Body.String())
 	}
-
 }
 
 func getBalanceResult(storage data.Storage, clientId string) statement.Response {

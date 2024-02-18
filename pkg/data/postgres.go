@@ -4,7 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"log/slog"
+	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -86,6 +88,55 @@ func (i *pgImpl) Save(acc Account, t Transaction) (err error) {
 		t.Type,
 	)
 	return err
+}
+
+type DataError struct {
+	Code int
+	Err  error
+}
+
+func (de DataError) Error() string {
+	return strconv.Itoa(de.Code) + ": " + de.Err.Error()
+}
+
+func newErr(code int, err error) *DataError {
+	return &DataError{Code: code, Err: err}
+}
+
+func (i *pgImpl) SaveSafety(accId int, t Transaction) (acc Account, derr *DataError) {
+	ctx := context.Background()
+	tx, err := i.dbpool.Begin(ctx)
+	defer func() {
+		if err != nil {
+			tx.Rollback(ctx)
+		} else {
+			tx.Commit(ctx)
+		}
+	}()
+
+	err = tx.QueryRow(ctx, "select id, nome, limite, saldo from clientes where id=$1 for update", accId).
+		Scan(&acc.ClientId, &acc.ClientName, &acc.Limit, &acc.Balance)
+	if err != nil {
+		if err.Error() == pgx.ErrNoRows.Error() {
+			return acc, newErr(http.StatusNotFound, err)
+		}
+		return acc, newErr(http.StatusInternalServerError, err)
+	}
+
+	if err = acc.PerformTransaction(&t); err != nil {
+		return acc, newErr(http.StatusUnprocessableEntity, err)
+	}
+
+	if _, err = tx.Exec(ctx, "update clientes set saldo=$2 where id=$1", acc.ClientId, acc.Balance); err != nil {
+		return acc, newErr(http.StatusInternalServerError, err)
+	}
+
+	t.ClientId = acc.ClientId
+	if _, err = tx.Exec(ctx, "insert into transacoes(cliente_id, valor, descricao, realizada_em, tipo) values($1, $2, $3, $4, $5)", t.ClientId, t.Value, t.Description, t.CreatedAt, t.Type); err != nil {
+		return acc, newErr(http.StatusInternalServerError, err)
+	}
+
+	return acc, nil
 }
 
 func (i *pgImpl) CleanUp() (err error) {
