@@ -12,7 +12,7 @@ import (
 	"strconv"
 )
 
-const VERSION = "0.1.2"
+const VERSION = "0.1.3"
 
 func main() {
 	bindAddress := os.Getenv("BIND_ADDRESS")
