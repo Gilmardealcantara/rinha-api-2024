@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"slices"
 	"strconv"
 	"time"
 
@@ -28,17 +29,25 @@ func GetStatement(storage data.Storage) http.HandlerFunc {
 		}
 
 		if acc == nil {
-			utils.WriteErrorJson(w, errors.New("account not found id: "+idPath), http.StatusNotFound)
+			utils.WriteErrorJson(
+				w,
+				errors.New("account not found id: "+idPath),
+				http.StatusNotFound,
+			)
 			return
 		}
 
 		// slog.Info("GetStatement: client_id: "+idPath, slog.String("app_name", utils.AppName), slog.Any("account", acc))
 
-		transaction, err := storage.GetTransactions(acc.ClientId)
+		transactions, err := storage.GetTransactions(acc.ClientId)
 		if err != nil {
 			utils.WriteErrorJson(w, err, http.StatusInternalServerError)
 			return
 		}
+
+		slices.SortFunc(transactions, func(a, b data.Transaction) int {
+			return b.CreatedAt.Compare(a.CreatedAt)
+		})
 
 		result := Response{
 			Balance: BalanceResult{
@@ -46,7 +55,7 @@ func GetStatement(storage data.Storage) http.HandlerFunc {
 				Date:  getTimeStr(AppNow()),
 				Limit: acc.Limit,
 			},
-			LastTransactions: transaction,
+			LastTransactions: transactions,
 		}
 		utils.WriteJson(w, result, http.StatusOK)
 	}

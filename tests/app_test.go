@@ -36,7 +36,7 @@ func TestCreateTransaction(t *testing.T) {
 			request.SetPathValue("id", "1")
 			recorder := httptest.NewRecorder()
 			transactions.Create(storage)(recorder, request)
-			assert.Equal(t, http.StatusBadRequest, recorder.Code)
+			assert.Equal(t, http.StatusUnprocessableEntity, recorder.Code)
 		})
 	}
 

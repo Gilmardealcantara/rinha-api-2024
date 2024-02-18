@@ -12,7 +12,7 @@ type Account struct {
 	Balance    int64
 }
 
-func (c *Account) PerformTransaction(payload Transaction) error {
+func (c *Account) PerformTransaction(payload *Transaction) error {
 	payload.CreatedAt = time.Now()
 	if payload.Type == "c" {
 		return c.credit(payload.Value)

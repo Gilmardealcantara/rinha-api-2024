@@ -26,9 +26,18 @@ O diretório [participacao](https://github.com/Gilmardealcantara/rinha-de-backen
 contem os artefatos usados para a submissão da Rinha de Backend. Eles também pode ser encontrados na raiz desse projeto.
 
 
+### docker compose files
+https://github.com/Gilmardealcantara/rinha-de-backend-2024-q1/tree/main/participantes/Gilmardealcantara
+
+
 ## Local Results
 ![local results](./assets/gatling.png)
 
+
+## sql utils
+```sql
+SELECT left(query, 10), total_exec_time FROM pg_stat_statements where query like 'INSERT%' or query like 'SELECT%' or query like 'UPDATE%' ORDER BY total_exec_time DESC LIMIT 10;
+```
 
 ## License
 
