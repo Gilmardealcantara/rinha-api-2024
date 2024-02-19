@@ -10,6 +10,7 @@ type Account struct {
 	ClientName string
 	Limit      int
 	Balance    int
+	Version    int
 }
 
 func (c *Account) PerformTransaction(payload *Transaction) error {

@@ -103,12 +103,52 @@ func newErr(code int, err error) *DataError {
 	return &DataError{Code: code, Err: err}
 }
 
+func (i *pgImpl) SaveOptimistic(accId int, t Transaction) (acc Account, derr *DataError) {
+	acc, derr = i.trySave(accId, &t, 0)
+	if derr != nil {
+		return acc, derr
+	}
+	t.ClientId = acc.ClientId
+	if _, err := i.dbpool.Exec(context.Background(), "insert into transacoes(cliente_id, valor, descricao, realizada_em, tipo) values($1, $2, $3, $4, $5)", t.ClientId, t.Value, t.Description, t.CreatedAt, t.Type); err != nil {
+		return acc, newErr(http.StatusInternalServerError, err)
+	}
+	return acc, derr
+}
+
+func (i *pgImpl) trySave(accId int, t *Transaction, retry int) (acc Account, derr *DataError) {
+	ctx := context.Background()
+	err := i.dbpool.QueryRow(ctx, "select id, nome, limite, saldo, versao from clientes where id=$1", accId).
+		Scan(&acc.ClientId, &acc.ClientName, &acc.Limit, &acc.Balance, &acc.Version)
+	if err != nil {
+		if err.Error() == pgx.ErrNoRows.Error() {
+			return acc, newErr(http.StatusNotFound, err)
+		}
+		return acc, newErr(http.StatusInternalServerError, err)
+	}
+
+	if err = acc.PerformTransaction(t); err != nil {
+		return acc, newErr(http.StatusUnprocessableEntity, err)
+	}
+
+	result, err := i.dbpool.Exec(ctx, "update clientes set saldo=$2, versao = versao + 1 where id=$1 and versao=$3", acc.ClientId, acc.Balance, acc.Version)
+	if err != nil {
+		return acc, newErr(http.StatusInternalServerError, err)
+	}
+
+	if result.RowsAffected() == 0 {
+		// slog.Info("Retry UpdateBalance: ", slog.Int("retry", retry))
+		return i.trySave(accId, t, retry+1)
+	}
+
+	return acc, nil
+}
+
 func (i *pgImpl) SaveSafety(accId int, t Transaction) (acc Account, derr *DataError) {
 	ctx := context.Background()
 	tx, err := i.dbpool.Begin(ctx)
 	defer tx.Rollback(ctx)
 
-	err = tx.QueryRow(ctx, "select id, nome, limite, saldo from clientes where id=$1 for update", accId).
+	err = tx.QueryRow(ctx, "select id, nome, limite, saldo from clientes where id=$1 for no key update", accId).
 		Scan(&acc.ClientId, &acc.ClientName, &acc.Limit, &acc.Balance)
 	if err != nil {
 		if err.Error() == pgx.ErrNoRows.Error() {

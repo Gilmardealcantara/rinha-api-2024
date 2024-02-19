@@ -13,7 +13,7 @@ import (
 	"github.com/Gilmardealcantara/rinha/pkg/utils"
 )
 
-const VERSION = "0.1.8"
+const VERSION = "0.2.1"
 
 func main() {
 	bindAddress := os.Getenv("BIND_ADDRESS")
