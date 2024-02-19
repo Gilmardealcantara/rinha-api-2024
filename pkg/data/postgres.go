@@ -106,13 +106,7 @@ func newErr(code int, err error) *DataError {
 func (i *pgImpl) SaveSafety(accId int, t Transaction) (acc Account, derr *DataError) {
 	ctx := context.Background()
 	tx, err := i.dbpool.Begin(ctx)
-	defer func() {
-		if err != nil {
-			tx.Rollback(ctx)
-		} else {
-			tx.Commit(ctx)
-		}
-	}()
+	defer tx.Rollback(ctx)
 
 	err = tx.QueryRow(ctx, "select id, nome, limite, saldo from clientes where id=$1 for update", accId).
 		Scan(&acc.ClientId, &acc.ClientName, &acc.Limit, &acc.Balance)
@@ -131,8 +125,13 @@ func (i *pgImpl) SaveSafety(accId int, t Transaction) (acc Account, derr *DataEr
 		return acc, newErr(http.StatusInternalServerError, err)
 	}
 
+	err = tx.Commit(ctx)
+	if err != nil {
+		return acc, nil
+	}
+
 	t.ClientId = acc.ClientId
-	if _, err = tx.Exec(ctx, "insert into transacoes(cliente_id, valor, descricao, realizada_em, tipo) values($1, $2, $3, $4, $5)", t.ClientId, t.Value, t.Description, t.CreatedAt, t.Type); err != nil {
+	if _, err = i.dbpool.Exec(ctx, "insert into transacoes(cliente_id, valor, descricao, realizada_em, tipo) values($1, $2, $3, $4, $5)", t.ClientId, t.Value, t.Description, t.CreatedAt, t.Type); err != nil {
 		return acc, newErr(http.StatusInternalServerError, err)
 	}
 
@@ -149,8 +148,8 @@ func (i *pgImpl) CleanUp() (err error) {
 }
 
 func Config() *pgxpool.Config {
-	const defaultMaxConns = int32(4)
-	const defaultMinConns = int32(0)
+	const defaultMaxConns = int32(7)
+	const defaultMinConns = int32(2)
 	const defaultMaxConnLifetime = time.Hour
 	const defaultMaxConnIdleTime = time.Minute * 30
 	const defaultHealthCheckPeriod = time.Minute
